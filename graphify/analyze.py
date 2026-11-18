@@ -41,7 +41,7 @@ _LANG_FAMILY: dict[str, str] = {
     **{e: "dotnet" for e in (".cs", ".vb")},
     **{e: "php" for e in (".php",)},
     **{e: "r" for e in (".r",)},
-    **{e: "gdscript" for e in (".gd", ".tscn", ".tres", ".godot")},
+    **{e: "gdscript" for e in (".gd", ".tscn", ".tres", ".godot", ".gdshader", ".gdshaderinc")},
     **{e: "cobol" for e in (".cbl", ".cob", ".cobol", ".cpy")},
     **{e: "solidity" for e in (".sol",)},
     **{e: "erlang" for e in (".erl", ".hrl", ".escript")},

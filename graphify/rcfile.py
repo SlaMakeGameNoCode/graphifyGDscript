@@ -66,6 +66,7 @@ LANGUAGE_ALIASES: dict[str, str] = {
     "dart": ".dart",
     "r": ".r",
     "gdscript": ".gd",
+    "gdshader": ".gdshader",
     "fortran": ".f90",
     "shell": ".sh", "bash": ".sh", "sh": ".sh",
     "powershell": ".ps1",

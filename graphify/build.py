@@ -572,6 +572,8 @@ _EDGE_LANG_FAMILY: dict[str, str] = {
     ".erl": "erlang", ".hrl": "erlang", ".escript": "erlang",
     ".zig": "zig", ".ex": "elixir", ".exs": "elixir", ".jl": "julia",
     ".dart": "dart", ".sql": "sql",
+    ".gd": "gdscript", ".tscn": "gdscript", ".tres": "gdscript", ".godot": "gdscript",
+    ".gdshader": "gdscript", ".gdshaderinc": "gdscript",
     ".sh": "shell", ".bash": "shell",
     ".ps1": "powershell", ".psm1": "powershell", ".psd1": "powershell",
 }

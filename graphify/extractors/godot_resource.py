@@ -30,7 +30,7 @@ _SECTION_RE = re.compile(r"^\[([a-z_]+)(\s.*)?\]\s*$")
 _ATTR_RE = re.compile(r'(\w+)=("[^"]*"|\w+\([^)]*\)|[^\s\]]+)')
 _PROP_RE = re.compile(r"^([\w/]+)\s*=\s*(.+?)\s*$")
 _EXT_RESOURCE_RE = re.compile(r'ExtResource\(\s*"?([^")\s]+)"?\s*\)')
-_LINKED_SUFFIXES = frozenset({".gd", ".tscn", ".tres"})
+_LINKED_SUFFIXES = frozenset({".gd", ".tscn", ".tres", ".gdshader", ".gdshaderinc"})
 
 
 def _unquote(value: str) -> str:

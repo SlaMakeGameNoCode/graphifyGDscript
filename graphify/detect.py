@@ -45,7 +45,7 @@ _MANIFEST_PATH = str(out_path("manifest.json"))
 _MTIME_COARSE_S = 2.0
 _MTIME_SUBSECOND_S = 0.05
 
-CODE_EXTENSIONS = {'.py', '.ts', '.tsx', '.mts', '.cts', '.js', '.jsx', '.mjs', '.cjs', '.ejs', '.ets', '.go', '.rs', '.vb', '.cbl', '.cob', '.cobol', '.cpy', '.java', '.groovy', '.gradle', '.cpp', '.cc', '.cxx', '.c', '.h', '.hpp', '.cu', '.cuh', '.metal', '.rb', '.rake', '.swift', '.kt', '.kts', '.cs', '.scala', '.php', '.lua', '.luau', '.toc', '.zig', '.ps1', '.psm1', '.psd1', '.ex', '.exs', '.m', '.mm', '.ml', '.mli', '.jl', '.vue', '.svelte', '.astro', '.dart', '.v', '.sv', '.svh', '.vh', '.sql', '.r', '.f', '.F', '.f90', '.F90', '.f95', '.F95', '.f03', '.F03', '.f08', '.F08', '.pas', '.pp', '.dpr', '.dpk', '.lpr', '.inc', '.dfm', '.lfm', '.lpk', '.sh', '.bash', '.json', '.yaml', '.yml', '.tf', '.tfvars', '.hcl', '.dm', '.dme', '.dmi', '.dmm', '.dmf', '.sln', '.slnx', '.csproj', '.fsproj', '.vbproj', '.xaml', '.razor', '.cshtml', '.cls', '.trigger', '.lisp', '.cl', '.lsp', '.asd', '.robot', '.resource', '.sol', '.erl', '.hrl', '.escript', '.gd', '.tscn', '.tres', '.godot'}
+CODE_EXTENSIONS = {'.py', '.ts', '.tsx', '.mts', '.cts', '.js', '.jsx', '.mjs', '.cjs', '.ejs', '.ets', '.go', '.rs', '.vb', '.cbl', '.cob', '.cobol', '.cpy', '.java', '.groovy', '.gradle', '.cpp', '.cc', '.cxx', '.c', '.h', '.hpp', '.cu', '.cuh', '.metal', '.rb', '.rake', '.swift', '.kt', '.kts', '.cs', '.scala', '.php', '.lua', '.luau', '.toc', '.zig', '.ps1', '.psm1', '.psd1', '.ex', '.exs', '.m', '.mm', '.ml', '.mli', '.jl', '.vue', '.svelte', '.astro', '.dart', '.v', '.sv', '.svh', '.vh', '.sql', '.r', '.f', '.F', '.f90', '.F90', '.f95', '.F95', '.f03', '.F03', '.f08', '.F08', '.pas', '.pp', '.dpr', '.dpk', '.lpr', '.inc', '.dfm', '.lfm', '.lpk', '.sh', '.bash', '.json', '.yaml', '.yml', '.tf', '.tfvars', '.hcl', '.dm', '.dme', '.dmi', '.dmm', '.dmf', '.sln', '.slnx', '.csproj', '.fsproj', '.vbproj', '.xaml', '.razor', '.cshtml', '.cls', '.trigger', '.lisp', '.cl', '.lsp', '.asd', '.robot', '.resource', '.sol', '.erl', '.hrl', '.escript', '.gd', '.tscn', '.tres', '.godot', '.gdshader', '.gdshaderinc'}
 DOC_EXTENSIONS = {'.md', '.mdx', '.qmd', '.skill', '.txt', '.rst', '.html', '.j2', '.jinja', '.jinja2'}
 PAPER_EXTENSIONS = {'.pdf'}
 IMAGE_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg'}
@@ -1001,6 +1001,7 @@ _SKIP_DIRS = {
     ".graphify",  # graphify's own extraction cache — never index self-generated data
     ".obsidian", ".smart-env",  # Obsidian vault metadata and plugin caches (#2493)
     ".worktrees",  # git worktree convention (#947) — sibling checkouts, always redundant
+    ".godot", ".import",  # Godot 4 / Godot 3 editor cache: imported assets, uid and shader caches
 }
 
 # Large generated files that are never useful to extract
@@ -1011,7 +1012,24 @@ _SKIP_FILES = {
     # Removed allowlist config (#2112) — no longer consumed, so keep a leftover
     # file out of the unclassified list instead of surfacing it as scan input.
     ".graphifyinclude",
+    ".gdignore",  # Godot's empty "do not import this folder" marker
 }
+
+# Godot writes a sidecar next to every imported asset (`icon.png.import`) and,
+# from 4.4, next to every script, shader and resource (`player.gd.uid`). A
+# sidecar only maps its companion file to import settings or a `uid://` id, so
+# it is not corpus input: skipped like a lock file instead of being listed as
+# unclassified, which made a Godot project look ~40% unsupported. A sidecar whose
+# companion is gone (stale) is still listed.
+_GODOT_SIDECAR_SUFFIXES = (".import", ".uid")
+
+
+def _godot_sidecar_companion(name: str) -> str | None:
+    """``icon.png`` for ``icon.png.import``, ``player.gd`` for ``player.gd.uid``."""
+    for suffix in _GODOT_SIDECAR_SUFFIXES:
+        if name.endswith(suffix) and len(name) > len(suffix):
+            return name[: -len(suffix)]
+    return None
 
 # Files a JS/TS toolchain reads to resolve modules: workspace package roots,
 # tsconfig `paths`/`baseUrl`, and the installed dependency tree. Changing one of
@@ -2034,6 +2052,9 @@ def ignored_predicate(
             return False  # outside the scan root: detect() never considered it
         if path.name in _SKIP_FILES or _is_installed_graphify_file(path):
             return True
+        companion = _godot_sidecar_companion(path.name)
+        if companion is not None and (path.parent / companion).exists():
+            return True
         # Noise-dir pruning: os.walk never descends these, so anything beneath
         # one is excluded from the corpus regardless of ignore patterns.
         parent = root
@@ -2295,7 +2316,11 @@ def detect(root: Path, *, follow_symlinks: bool | None = None, google_workspace:
                             continue
                         safe_dirs.append(d)
                     dirnames[:] = safe_dirs
+            siblings = set(filenames)
             for fname in filenames:
+                companion = _godot_sidecar_companion(fname)
+                if companion is not None and companion in siblings:
+                    continue
                 if fname in _SKIP_FILES:
                     if is_resolution_input(fname):
                         # Not corpus input, but a JS/TS resolution input: record

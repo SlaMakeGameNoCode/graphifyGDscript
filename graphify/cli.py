@@ -5125,7 +5125,7 @@ def dispatch_command(cmd: str) -> None:
                             "_rust_impl_key", "_rust_declaration_count",
                             "_ts_public_twin", "_py_property", "_java_ret", "_java_type",
                             "_ts_fields", "_ts_static_fields",
-                            "_py_fixture", "_py_return_type", "_go_fields",
+                            "_py_fixture", "_py_return_type", "_go_fields", "_gd_fields",
                             "_go_package_path",
                         ):
                             if _node.get(_marker) or (_marker.startswith("_cpp_") and isinstance(_node.get(_marker), (dict, list))):

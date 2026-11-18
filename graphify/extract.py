@@ -76,6 +76,7 @@ from graphify.extractors.elixir import extract_elixir  # noqa: F401
 from graphify.extractors.erlang import extract_erlang, resolve_erlang_remote_calls  # noqa: F401
 from graphify.extractors.fortran import _cpp_preprocess, extract_fortran  # noqa: F401
 from graphify.extractors.gdscript import extract_gdscript, resolve_gdscript_references  # noqa: F401
+from graphify.extractors.gdshader import extract_gdshader  # noqa: F401
 from graphify.extractors.godot_resource import extract_godot_resource  # noqa: F401
 from graphify.extractors.go import _GO_PREDECLARED_FUNCS, extract_go  # noqa: F401
 from graphify.extractors.json_config import extract_json  # noqa: F401
@@ -4646,6 +4647,7 @@ _LANG_FAMILY_BY_EXT: dict[str, str] = {
     ".lua": "lua", ".luau": "lua",
     ".zig": "zig",
     ".gd": "gdscript", ".tscn": "gdscript", ".tres": "gdscript", ".godot": "gdscript",
+    ".gdshader": "gdscript", ".gdshaderinc": "gdscript",
     ".ex": "elixir", ".exs": "elixir",
     ".jl": "julia",
     ".dart": "dart",
@@ -11148,6 +11150,8 @@ _DISPATCH: dict[str, Any] = {
     ".tscn": extract_godot_resource,
     ".tres": extract_godot_resource,
     ".godot": extract_godot_resource,
+    ".gdshader": extract_gdshader,
+    ".gdshaderinc": extract_gdshader,
     ".ps1": extract_powershell,
     ".psm1": extract_powershell,
     ".psd1": extract_powershell_manifest,
